@@ -86,9 +86,20 @@ def parse_sql_entry(db_type, e):
         query = re.sub(r'[^:]:([a-zA-Z_-]+)', r'%(\1)s', query)
 
     # dynamically create the "name" function
-    def fn(conn, *args, **kwargs):
+    def fn(c, *args, **kwargs):
+        """
+        :param c: connection or cursor
+        :param args: sql params
+        :param kwargs: sql params
+        """
         results = None
-        cur = conn.cursor()
+        if hasattr(c, 'execute'):  # it's cursor
+            cur = c
+            close_cursor = False
+        else:
+            cur = c.cursor()
+            close_cursor = True
+
         cur.execute(query, kwargs if len(kwargs) > 0 else args)
 
         if sql_type == SELECT:
@@ -105,6 +116,8 @@ def parse_sql_entry(db_type, e):
             elif db_type == 'sqlite':
                 results = cur.lastrowid
 
+        if close_cursor:
+            cur.close()
         cur.close()
         return results
 
