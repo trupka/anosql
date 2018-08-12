@@ -118,7 +118,7 @@ def parse_sql_entry(db_type, e):
 
         if close_cursor:
             cur.close()
-        cur.close()
+
         return results
 
     fn.__doc__ = doc
